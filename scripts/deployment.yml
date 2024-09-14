@@ -19,36 +19,27 @@ spec:
       - name: book-catalog
         image: ammarkazi99/book-catalog:latest
         ports:
-        - containerPort: 8000  # FastAPI typically runs on port 8000
+        - containerPort: 8000 
         env:
         - name: DATABASE_URL
-          value: <your-database-url>  # Replace with your actual database connection string
-        resources:  # You can define resource limits here
+          value: postgresql://sit722_part2_db_xbja_user:QFd4v5R3pKGFCk59BWep6gnrhENTkGlt@dpg-crie3itumphs73cj2k2g-a.oregon-postgres.render.com/sit722_part2_db_xbja  # external db url
+        resources:
           limits:
             memory: "512Mi"
             cpu: "500m"
           requests:
             memory: "256Mi"
             cpu: "250m"
-        volumeMounts:  # If you need to mount any persistent volumes (optional)
-        - mountPath: /path/in/container
-          name: book-catalog-volume
-      restartPolicy: Always
-      volumes:
-      - name: book-catalog-volume
-        persistentVolumeClaim:
-          claimName: book-catalog-pvc  # Define a PVC if you need persistent storage
-
 ---
 apiVersion: v1
 kind: Service
 metadata:
   name: book-catalog-service
 spec:
+  type: NodePort
+  ports:
+    - port: 80
+      targetPort: 8000
+      nodePort: 30000
   selector:
     app: book-catalog
-  ports:
-    - protocol: TCP
-      port: 80
-      targetPort: 8000 
-  type: ClusterIP
