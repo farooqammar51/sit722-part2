@@ -1,0 +1,54 @@
+#Kubernetes Deployment Script
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: book-catalog-deployment
+  labels:
+    app: book-catalog
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app: book-catalog
+  template:
+    metadata:
+      labels:
+        app: book-catalog
+    spec:
+      containers:
+      - name: book-catalog
+        image: ammarkazi99/book-catalog:latest
+        ports:
+        - containerPort: 8000  # FastAPI typically runs on port 8000
+        env:
+        - name: DATABASE_URL
+          value: <your-database-url>  # Replace with your actual database connection string
+        resources:  # You can define resource limits here
+          limits:
+            memory: "512Mi"
+            cpu: "500m"
+          requests:
+            memory: "256Mi"
+            cpu: "250m"
+        volumeMounts:  # If you need to mount any persistent volumes (optional)
+        - mountPath: /path/in/container
+          name: book-catalog-volume
+      restartPolicy: Always
+      volumes:
+      - name: book-catalog-volume
+        persistentVolumeClaim:
+          claimName: book-catalog-pvc  # Define a PVC if you need persistent storage
+
+---
+apiVersion: v1
+kind: Service
+metadata:
+  name: book-catalog-service
+spec:
+  selector:
+    app: book-catalog
+  ports:
+    - protocol: TCP
+      port: 80
+      targetPort: 8000 
+  type: ClusterIP
